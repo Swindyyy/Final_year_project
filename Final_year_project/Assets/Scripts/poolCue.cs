@@ -27,6 +27,7 @@ public class poolCue : MonoBehaviour {
     float pwr;
     float multiplier = 10;
     bool spin = false;
+    bool fric = false;
 
     // Use this for initialization
     void Start () {
@@ -76,7 +77,48 @@ public class poolCue : MonoBehaviour {
         
         if(spin == true)
         {
-            rb.AddTorque(new Vector3(0f, 0f, 10f));
+            rb.AddTorque(new Vector3((xSpin1 + pwr), 0f, (zSpin1 + pwr)));
+        }
+
+        
+        if (fric == true)
+        {
+            float friction = 0.1f;
+            bool xSpinP = false;
+            bool zSpinP = false;
+
+            if (xSpin1 < 0)
+            {
+                xSpinP = false;
+                xSpin1 += friction;
+                rb.AddTorque(new Vector3(xSpin1, 0f, zSpin1));
+            }
+            if(xSpin1 > 0)
+            {
+                xSpinP = true;
+                xSpin1 -= friction;
+                rb.AddTorque(new Vector3(xSpin1, 0f, zSpin1));
+            }
+
+            if (zSpin1 < 0)
+            {
+                zSpinP = false;
+                zSpin1 += friction;
+                rb.AddTorque(new Vector3(xSpin1, 0f, zSpin1));
+            }   
+            if(zSpin1 > 0)
+            {
+                zSpinP = true;
+                zSpin1 -= friction;
+                rb.AddTorque(new Vector3(xSpin1, 0f, zSpin1));
+            }
+
+            if ((xSpinP == true && xSpin1 <= 0 && zSpinP == false && zSpin1 >= 0) || (xSpinP == true && xSpin1 <= 0 && zSpinP == true && zSpin1 <= 0) || (xSpinP == false && xSpin1 >= 0 && zSpinP == true && zSpin1 <= 0) || (xSpinP == false && xSpin1 >= 0 && zSpinP == false && zSpin1 >= 0))
+            {
+                StopSpin();
+                fric = false;
+            }
+                
         }
     }
 
@@ -87,6 +129,12 @@ public class poolCue : MonoBehaviour {
         zSpin1 = zSpin;
 
         fireBall = true;
+    }
+
+    public void FricCollision()
+    {
+        xSpin1 = xSpin1/2;
+        zSpin1 = zSpin1/2;
     }
 
     public void Fire(float power, float xSpin, float zSpin)
@@ -112,10 +160,8 @@ public class poolCue : MonoBehaviour {
         rb.AddRelativeForce(new Vector3(0f, 0f, power), ForceMode.Impulse);
 
         spin = true;
-        yield return new WaitForSeconds(2);
-
-        //cueBall.GetComponent<ConstantForce>().torque = new Vector3((xSpin * multiplier), 0f, (zSpin * multiplier));
-        //Debug.Log(Mathf.Ceil(xSpin * multiplier));
+        yield return new WaitForSeconds(0.63f);
+        Friction();
 
         canHit = false;
         playerMan.SetPlayerHit(true);
@@ -138,5 +184,15 @@ public class poolCue : MonoBehaviour {
         cue.GetComponent<MeshRenderer>().enabled = true;
         transform.position = pivot.transform.position + cuePosOffset;
         canHit = true;
+    }
+
+    public void StopSpin()
+    {
+        spin = false;
+    }
+
+    public void Friction()
+    {
+        fric = true;
     }
 }

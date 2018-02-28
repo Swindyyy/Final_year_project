@@ -7,13 +7,15 @@ public class cueBallScript : MonoBehaviour {
     GMScript gm;
     turnManagerScript tm;
     GameObject cueBall;
+    GameObject pC;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
         pm = playerManager.playerMan;
         gm = GMScript.gameMan;
         tm = turnManagerScript.turnManager;
         cueBall = gm.GetCueBall();
+        pC = gm.GetCueObject();
     }
 	
 	// Update is called once per frame
@@ -32,8 +34,9 @@ public class cueBallScript : MonoBehaviour {
 
         if(collision != null)
         {
-            cueBall.GetComponent<ConstantForce>().torque = Vector3.zero;
-            poolCue.spin = false;
+            //cueBall.GetComponent<ConstantForce>().torque = Vector3.zero;
+            //pC.GetComponent<poolCue>().StopSpin();
+            GetComponent<poolCue>().FricCollision();
         }
     }
 }
