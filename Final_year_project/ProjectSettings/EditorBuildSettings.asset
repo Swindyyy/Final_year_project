@@ -12,8 +12,8 @@ EditorBuildSettings:
     path: Assets/Scenes/NetworkScene.unity
     guid: c64a2f912e2bd4e4ab2a0685e056a41a
   - enabled: 1
-    path: Assets/Scenes/NetworkTestScene.unity
-    guid: f1a65278b4f9e3f4c9cf642c9f107a97
-  - enabled: 1
     path: Assets/Scenes/SinglePlayerAI.unity
     guid: 6a8f593f617104f48b5835e65ec48870
+  - enabled: 1
+    path: Assets/Scenes/TwoPlayer.unity
+    guid: 49b7fed02a3696542a45158d1f98844e
