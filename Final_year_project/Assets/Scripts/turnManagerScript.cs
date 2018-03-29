@@ -11,7 +11,7 @@ public class turnManagerScript : NetworkBehaviour
 
 
     public static turnManagerScript turnManager;
-    public float finalCheckDelay = 5.0f;
+    public float finalCheckDelay = 15.0f;
 
     [SerializeField]
     GMScript gm;
@@ -71,6 +71,7 @@ public class turnManagerScript : NetworkBehaviour
 
     GameObject firstBallHitByCueBall = null;
 
+    bool errorFindingPlayer = false;
 
     private void Awake()
     {
@@ -92,7 +93,7 @@ public class turnManagerScript : NetworkBehaviour
 
         if (gm != null)
         {
-            ui = gm.GetUIObject();
+            ui = ingameUIScript.ingameUISingleton;
             cue = gm.GetCueObject();
         }
 
@@ -104,6 +105,11 @@ public class turnManagerScript : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GMScript.gameMan.hasGameEnded)
+        {
+            return;
+        }
+
         GetActiveBallList();
         if (hasAllBallsStoppedMovement == false)
         {
@@ -154,8 +160,7 @@ public class turnManagerScript : NetworkBehaviour
                             visitsToBeAwardedNextTurn = 2;
                             currentVisits = 0;
                         }
-                        else
-                        {
+                        else {
                             if (blackBallPotted)
                             {
                                 ResetCueBall();
@@ -270,6 +275,17 @@ public class turnManagerScript : NetworkBehaviour
                                 }
                             }
 
+                            if(currentPlayerTarget == GMScript.Target.Black)
+                            {
+                                if (firstBallHitByCueBall != null)
+                                {
+                                    if (firstBallHitByCueBall.CompareTag("blackBall"))
+                                    {
+                                        didCueBallHitTargetColourFirst = true;
+                                    }
+                                }
+                            }
+
                             Debug.Log("Current target is: " + currentPlayerTarget);
 
                             if (didCueBallHitTargetColourFirst)
@@ -299,17 +315,32 @@ public class turnManagerScript : NetworkBehaviour
                                         }
                                     }
                                 }
-                                else
-                                {
-                                    if (cueBallPotted)
-                                    {
-                                        visitsToBeAwardedNextTurn = 2;
-                                        currentVisits = 0;
-                                    }
 
-                                    if (blackBallPotted)
+                                if (blackBallPotted)
+                                {
+                                    if ((GetCurrentPlayerTarget() == GMScript.Target.Black) && !didPlayerCommitFoul)
                                     {
                                         ui.EndGameUI(true);
+                                        try
+                                        {
+                                            GameObject player = GameObject.FindGameObjectWithTag("Player");
+                                            player.GetComponent<PlayerInputController>().SyncIsGameOver(true);
+                                        } catch
+                                        {
+                                            Debug.Log("Can't find player, maybe you're not networked?");
+                                        }
+                                    } else if ((GetCurrentPlayerTarget() == GMScript.Target.Black) && didPlayerCommitFoul)
+                                    {
+                                        ui.EndGameUI(false);
+                                        try
+                                        {
+                                            GameObject player = GameObject.FindGameObjectWithTag("Player");
+                                            player.GetComponent<PlayerInputController>().SyncIsGameOver(false);
+                                        }
+                                        catch
+                                        {
+                                            Debug.Log("Can't find player, maybe you're not networked?");
+                                        }
                                     }
                                 }
                             }
@@ -317,7 +348,22 @@ public class turnManagerScript : NetworkBehaviour
                             {
                                 visitsToBeAwardedNextTurn = 2;
                                 currentVisits = 0;
+
+                                if(blackBallPotted)
+                                {
+                                    ingameUIScript.ingameUISingleton.EndGameUI(false);
+                                    try
+                                    {
+                                        GameObject player = GameObject.FindGameObjectWithTag("Player");
+                                        player.GetComponent<PlayerInputController>().SyncIsGameOver(true);
+                                    }
+                                    catch
+                                    {
+                                        Debug.Log("Can't find player, maybe you're not networked?");
+                                    }
+                                }
                             }
+
                         }
                         else
                         {
@@ -376,7 +422,7 @@ public class turnManagerScript : NetworkBehaviour
                     {
                         if (ui == null)
                         {
-                            ui = gm.GetUIObject();
+                            ui = ingameUIScript.ingameUISingleton;
                         }
                         ui.EnableColourSelectText();
                     }
@@ -386,14 +432,17 @@ public class turnManagerScript : NetworkBehaviour
                 if (cueBallPotted)
                 {
                     ResetCueBall();
+                    visitsToBeAwardedNextTurn = 2;
                     currentVisits = 0;
                 }
+
+
 
                 ResetCue();
 
                 if (ui == null)
                 {
-                    ui = gm.GetUIObject();
+                    ui = ingameUIScript.ingameUISingleton;
                 }
 
                 ui.UpdateTurnText();
@@ -404,7 +453,7 @@ public class turnManagerScript : NetworkBehaviour
 
                 if (!doesUserNeedToChoseColour)
                 {
-                    StartTurn();
+                    turnManagerScript.turnManager.StartTurn();
                 }
             }
             else
@@ -412,6 +461,7 @@ public class turnManagerScript : NetworkBehaviour
                 GetPositionOfBallsAtStartOfTurn();
             }
         }
+        
     }
 
     List<GameObject> GetActiveBallList()
@@ -419,12 +469,13 @@ public class turnManagerScript : NetworkBehaviour
         GameObject[] spottedBalls = GameObject.FindGameObjectsWithTag("spotBall");
         GameObject[] stripeBall = GameObject.FindGameObjectsWithTag("stripeBall");
         GameObject blackBall = GameObject.FindGameObjectWithTag("blackBall");
+        GameObject cueBall = GameObject.FindGameObjectWithTag("cueBall");
 
 
         List<GameObject> balls = new List<GameObject>();
         foreach (GameObject ball in spottedBalls)
         {
-            if (ball.GetComponent<Collider>().enabled)
+            if (ball.GetComponent<Rigidbody>().isKinematic == false)
             {
                 balls.Add(ball);
             }
@@ -438,7 +489,15 @@ public class turnManagerScript : NetworkBehaviour
             }
         }
 
-        balls.Add(blackBall);
+        if(blackBall.GetComponent<Rigidbody>().isKinematic == false)
+        {
+            balls.Add(blackBall);
+        }
+
+        if (cueBall.GetComponent<Rigidbody>().isKinematic == false)
+        {
+            balls.Add(cueBall);
+        }
 
         return balls;
     }
@@ -479,6 +538,7 @@ public class turnManagerScript : NetworkBehaviour
             catch
             {
                 Debug.Log("Cannot find player. Maybe they have not spawned yet?");
+                errorFindingPlayer = true;
             }
         }
 
@@ -505,6 +565,7 @@ public class turnManagerScript : NetworkBehaviour
             hasAllBallsStoppedMovement = true;
         }
         checkingTimerOn = false;
+
     }
 
     public void CheckBallMovement()
@@ -513,10 +574,16 @@ public class turnManagerScript : NetworkBehaviour
         foreach (GameObject obj in GetActiveBallList())
         {
             Rigidbody rb = obj.GetComponent<Rigidbody>();
-            if (Mathf.Abs(rb.velocity.x) < 0.05f && Mathf.Abs(rb.velocity.y) < 0.2f && Mathf.Abs(rb.velocity.z) < 0.05f)
+
+            if (Mathf.Abs(rb.velocity.x) < 0.02f && Mathf.Abs(rb.velocity.y) < 0.2f && Mathf.Abs(rb.velocity.z) < 0.02f)
             {
+                if (obj.CompareTag("cueBall"))
+                {
+                    poolCue.cueScript.StopSpin();
+                }
                 rb.velocity = new Vector3(0f, 0f, 0f);
                 rb.angularVelocity = new Vector3(0f, 0f, 0f);
+                
             }
             else
             {
@@ -570,10 +637,11 @@ public class turnManagerScript : NetworkBehaviour
         cueBall.transform.position = cueBallScript.cueBallSingleton.GetSpawnPosition();
         cueBall.transform.rotation = Quaternion.Euler(Vector3.zero);
         cueBall.GetComponent<Collider>().enabled = true;
-        cueBall.GetComponent<Rigidbody>().useGravity = true;
+        cueBall.GetComponent<Rigidbody>().isKinematic = false;
         cueBall.GetComponent<MeshRenderer>().enabled = true;
 
-        Invoke("ResetCueBall", 0.2f);
+
+        //Invoke("ResetCueBall", 0.2f);
         
     }
 
@@ -596,11 +664,14 @@ public class turnManagerScript : NetworkBehaviour
 
         foreach (GameObject obj in ballList)
         {
-
+            Rigidbody rb = obj.GetComponent<Rigidbody>();
+            rb.velocity = new Vector3(0f, 0f, 0f);
+            rb.angularVelocity = new Vector3(0f, 0f, 0f);
+            obj.GetComponent<Collider>().enabled = false;
             obj.transform.position = obj.GetComponent<ball>().GetStartTurnPosition();
             obj.transform.rotation = Quaternion.Euler(Vector3.zero);
             obj.GetComponent<Collider>().enabled = true;
-            obj.GetComponent<Rigidbody>().useGravity = true;
+            obj.GetComponent<Rigidbody>().isKinematic = false;
             obj.GetComponentInChildren<MeshRenderer>().enabled = true;
 
             if (obj.CompareTag("spotBall"))
@@ -667,6 +738,17 @@ public class turnManagerScript : NetworkBehaviour
                 {
                     numOfSpots = 0;
                 }
+
+                if(numOfSpots == 0)
+                {
+                    if(playerManager.playerMan.GetPlayer1Target() == GMScript.Target.Spots)
+                    {
+                        playerManager.playerMan.SetPlayer1Target(GMScript.Target.Black);
+                    } else if(playerManager.playerMan.GetPlayer2Target() == GMScript.Target.Spots)
+                    {
+                        playerManager.playerMan.SetPlayer2Target(GMScript.Target.Black);
+                    }
+                }
             }
 
             if (obj.tag == "stripeBall")
@@ -680,6 +762,18 @@ public class turnManagerScript : NetworkBehaviour
                 else
                 {
                     numOfStripes = 0;
+                }
+
+                if (numOfSpots == 0)
+                {
+                    if (playerManager.playerMan.GetPlayer1Target() == GMScript.Target.Stripes)
+                    {
+                        playerManager.playerMan.SetPlayer1Target(GMScript.Target.Black);
+                    }
+                    else if (playerManager.playerMan.GetPlayer2Target() == GMScript.Target.Stripes)
+                    {
+                        playerManager.playerMan.SetPlayer2Target(GMScript.Target.Black);
+                    }
                 }
             }
 
@@ -731,17 +825,13 @@ public class turnManagerScript : NetworkBehaviour
         {
             if (GetCurrentPlayerTarget() == GMScript.Target.Spots)
             {
-                if (numOfSpots > 0)
-                {
-                    _hasFoulOccured = true;
-                }
+                _hasFoulOccured = true;
             }
             else if (GetCurrentPlayerTarget() == GMScript.Target.Stripes)
             {
-                if (numOfStripes > 0)
-                {
-                    _hasFoulOccured = true;
-                }
+
+                 _hasFoulOccured = true;
+
             }
         }
 
@@ -756,5 +846,8 @@ public class turnManagerScript : NetworkBehaviour
     private void OnGUI()
     {
         GUILayout.Box("Number of remaining visits: " + currentVisits);
+        GUILayout.Box("Number of moving balls: " + numOfMovingBalls);
+        GUILayout.Box("Have all balls stopped movement? " + hasAllBallsStoppedMovement);
+        GUILayout.Box("Does user need to choose colour? " + doesUserNeedToChoseColour);
     }
 }

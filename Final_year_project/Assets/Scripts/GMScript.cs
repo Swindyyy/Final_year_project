@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class GMScript : NetworkBehaviour
 {
-    public enum Target {None, Spots, Stripes };
+    public enum Target {None, Spots, Stripes, Black};
     public static GMScript gameMan;
 
     GameObject cueBall;
@@ -23,7 +23,7 @@ public class GMScript : NetworkBehaviour
     [SyncVar]
     bool playerHasPot = false;
     [SyncVar]
-    bool hasGameEnded = false;
+    public bool hasGameEnded = false;
     [SyncVar]
     bool isNetworked = false;
 
@@ -327,11 +327,10 @@ public class GMScript : NetworkBehaviour
         return isPlayer1;
     }
 
-    /* private void OnGUI()
+    public void NetworkEndGame(bool _value)
     {
-        GUILayout.Label("Is player 1? " + isPlayer1);
-        GUILayout.Label("Is player 1 turn?" + turnManagerScript.turnManager.GetIsPlayer1Turn());
-    } */
+        ingameUIScript.ingameUISingleton.EndGameUI(_value);
+    }
 
     public override void OnStartClient()
     {

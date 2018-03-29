@@ -39,16 +39,18 @@ public class NetworkedSpawnBalls : NetworkBehaviour
         if (stripesToSpawn.Count > 0 && spotsToSpawn.Count > 0 && blackBallPrefab != null && cueBallPrefab != null)
         {
             Vector3 spawnPos = transform.position;
+            float randNum = Random.Range(-0.05f, 0.05f);
             float rowStartX = transform.position.x - ballRadius;
             float rowStartZ = transform.position.z - ballRadius;
 
             spawnPos.z = rowStartZ - (((ballRadius * 2) * 20));
             spawnPos.y += 0.01f;
+            spawnPos.x += randNum;
             GameObject cueBallInstantiate = Instantiate(cueBallPrefab, spawnPos, Quaternion.identity) as GameObject;
             NetworkServer.Spawn(cueBallInstantiate);
             ballList.Add(cueBallInstantiate);
             GMScript.gameMan.SetCueBall(cueBallInstantiate);
-            
+            spawnPos.x = rowStartX;
             spawnPos.y = transform.position.y;
             for (int i = 0; i < (rows + 1); i++)
             {

@@ -40,6 +40,12 @@ public class sliderScript : MonoBehaviour {
 
     void Update()
     {
+        if(GMScript.gameMan.hasGameEnded)
+        {
+            return;
+        }
+
+
         powerText.text = pwrSlider.value.ToString();
         txtXValue.text = xSpinSlider.value.ToString();
         txtZValue.text = zSpinSlider.value.ToString();
@@ -54,6 +60,11 @@ public class sliderScript : MonoBehaviour {
             }
         }
 
+        if(GMScript.gameMan.hasGameEnded)
+        {
+            acceptingInput = false;
+        }
+
         if (acceptingInput)
         {
             if (Input.GetKeyDown(KeyCode.Space))
@@ -61,8 +72,9 @@ public class sliderScript : MonoBehaviour {
                 if (gm == null)
                     gm = GMScript.gameMan;
 
-                poolCue = gm.GetCueObject();
+                poolCue = GameObject.FindGameObjectWithTag("poolCue");
                 poolCue.GetComponent<poolCue>().CallFire(pwrSlider.value, xSpinSlider.value, zSpinSlider.value);
+                turnManagerScript.turnManager.CueBallHit();
             }
         }
     }

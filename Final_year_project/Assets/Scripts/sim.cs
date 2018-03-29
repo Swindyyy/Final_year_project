@@ -172,7 +172,7 @@ public class sim : MonoBehaviour
         {
             Time.timeScale = 1;
             if (db) print("choose_shot");
-            foreach (string s2 in results) print(s2);
+            //foreach (string s2 in results) print(s2);
             int limit = 10;
             results_arr = (string[])results.ToArray((typeof(string)));
             string[] top = new string[limit];
@@ -190,7 +190,7 @@ public class sim : MonoBehaviour
         sim_active = false;
         GMScript.gameMan.GetCueBall().GetComponent<Rigidbody>().transform.eulerAngles = new Vector3(0f, angle, 0f);
         poolCue poolCuev = GameObject.Find("Cue_Stick").GetComponent<poolCue>();
-        StartCoroutine(poolCuev.Hit(power,0f,0f));
+        poolCuev.CallFire(power,0f,0f);
     }
 
     string min(string[] arr)

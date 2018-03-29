@@ -64,6 +64,10 @@ public class poolCue : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        if(GMScript.gameMan.hasGameEnded)
+        {
+            return;
+        }
 
         cueBall = GameObject.FindGameObjectWithTag("cueBall");
         pivot = GameObject.Find("cuePivot");
@@ -190,6 +194,8 @@ public class poolCue : MonoBehaviour {
         zSpin1 = zSpin;
 
         fireBall = true;
+
+        TurnOffCue();
     }
 
     public void Fire(float power, float xSpin, float zSpin)
@@ -224,7 +230,7 @@ public class poolCue : MonoBehaviour {
 
         canHit = false;
         playerMan.SetPlayerHit(true);
-        tm.CueBallHit();
+        
     }
 
     void TurnOffCue()
@@ -263,6 +269,12 @@ public class poolCue : MonoBehaviour {
     {
         spin = false;
         fric = false;
+
+        ConstantForce cf = cueBallScript.cueBallSingleton.GetComponent<ConstantForce>();
+        cf.force = Vector3.zero;
+        cf.torque = Vector3.zero;
+        cf.relativeForce = Vector3.zero;
+        cf.relativeTorque = Vector3.zero;
     }
 
     public void Friction()

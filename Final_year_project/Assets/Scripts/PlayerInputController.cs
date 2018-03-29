@@ -91,9 +91,12 @@ public class PlayerInputController : NetworkBehaviour
         }else if(player1Target == GMScript.Target.Stripes)
         {
             player1TargetInt = 1;
-        }else
+        }else if(player1Target == GMScript.Target.Black)
         {
             player1TargetInt = 2;
+        } else
+        {
+            player1TargetInt = 3;
         }
 
         if (player2Target == GMScript.Target.Spots)
@@ -104,9 +107,12 @@ public class PlayerInputController : NetworkBehaviour
         {
             player2TargetInt = 1;
         }
-        else
+        else if(player2Target == GMScript.Target.Black)
         {
             player2TargetInt = 2;
+        } else
+        {
+            player2TargetInt = 3;
         }
 
         PlayerInputController.Local.Cmd_AssignLocalAuthority(playerManager.playerMan.gameObject);
@@ -126,6 +132,25 @@ public class PlayerInputController : NetworkBehaviour
         PlayerInputController.Local.Cmd_AssignLocalAuthority(turnManagerScript.turnManager.gameObject);
         PlayerInputController.Local.Cmd_SyncIsBreak(_value, netId);
         PlayerInputController.Local.Cmd_RemoveLocalAuthority(turnManagerScript.turnManager.gameObject);
+    }
+
+    public void SyncIsGameOver(bool _value)
+    {
+        PlayerInputController.Local.Cmd_AssignLocalAuthority(GMScript.gameMan.gameObject);
+        PlayerInputController.Local.Cmd_SyncIsBreak(_value, netId);
+        PlayerInputController.Local.Cmd_RemoveLocalAuthority(GMScript.gameMan.gameObject);
+    }
+
+    [Command]
+    private void Cmd_SyncIsGameOver(bool _value, NetworkInstanceId _netId)
+    {
+        NetworkServer.FindLocalObject(_netId).GetComponent<PlayerInputController>().Rpc_SyncIsGameOver(_value);
+    }
+
+    [ClientRpc]
+    private void Rpc_SyncIsGameOver(bool _value)
+    {
+        GMScript.gameMan.NetworkEndGame(_value);
     }
 
     [Command]
@@ -210,6 +235,9 @@ public class PlayerInputController : NetworkBehaviour
             case 1:
                 playerManager.playerMan.SetPlayer1Target(GMScript.Target.Stripes);
                 break;
+            case 2:
+                playerManager.playerMan.SetPlayer1Target(GMScript.Target.Black);
+                break;
             default:
                 playerManager.playerMan.SetPlayer1Target(GMScript.Target.None);
                 break;
@@ -222,6 +250,9 @@ public class PlayerInputController : NetworkBehaviour
                 break;
             case 1:
                 playerManager.playerMan.SetPlayer2Target(GMScript.Target.Stripes);
+                break;
+            case 2:
+                playerManager.playerMan.SetPlayer2Target(GMScript.Target.Black);
                 break;
             default:
                 playerManager.playerMan.SetPlayer2Target(GMScript.Target.None);

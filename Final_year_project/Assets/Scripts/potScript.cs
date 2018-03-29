@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class potScript : MonoBehaviour {
+public class potScript : MonoBehaviour
+{
 
     GMScript gm;
     turnManagerScript tm;
     playerManager pm;
     Rigidbody rb;
     GameObject colObject;
+    Vector3 potPosition = new Vector3(0f, -100f, 0f);
 
     private void Start()
     {
@@ -24,7 +26,7 @@ public class potScript : MonoBehaviour {
         turnManagerScript.turnManager.AddBallToPottedList(colObject);
 
         Debug.Log("Ball potted: " + colObject.name);
-        if(tag == "spotBall" || tag == "stripeBall" || tag == "cueBall" || tag == "blackBall")
+        if (tag == "spotBall" || tag == "stripeBall" || tag == "cueBall" || tag == "blackBall")
         {
             gm.RemoveBallFromList(colObject);
             colObject.SetActive(false);
@@ -36,26 +38,13 @@ public class potScript : MonoBehaviour {
 
         string tag = other.gameObject.tag;
         colObject = other.gameObject;
-        turnManagerScript.turnManager.AddBallToPottedList(colObject);
 
-        Debug.Log("Ball potted: " + colObject.name);
-
-        if (colObject.CompareTag("spotBall") || colObject.CompareTag("stripeBall") || colObject.CompareTag("cueBall") || colObject.CompareTag("blackBall"))
+        if (!colObject.name.Contains("dupe"))
         {
-            gm.RemoveBallFromList(colObject);
-
-            colObject.GetComponent<Rigidbody>().useGravity = false;
-            colObject.GetComponent<Collider>().enabled = false;
-            colObject.GetComponent<MeshRenderer>().enabled = false;
-            
-            //colObject.SetActive(false);
-            if (tag == "spotBall")
-            {
-                //GMScript.gameMan.PottedSpotBall();
-            }
-            else if(tag == "stripeBall") {
-                //GMScript.gameMan.PottedStripeBall();
-            }
+            turnManagerScript.turnManager.AddBallToPottedList(colObject);
+            Debug.Log("Ball potted: " + colObject.name);
         }
+
+        colObject.gameObject.transform.position = potPosition;        
     }
 }

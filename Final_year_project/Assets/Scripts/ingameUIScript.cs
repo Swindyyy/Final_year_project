@@ -6,6 +6,7 @@ using System;
 
 public class ingameUIScript : MonoBehaviour {
 
+    public static ingameUIScript ingameUISingleton;
     GMScript gameManager;    
     playerManager playerMan;
     turnManagerScript tm;
@@ -26,8 +27,19 @@ public class ingameUIScript : MonoBehaviour {
     [SerializeField]
     private GameObject colourSelectObject;
 
-	// Use this for initialization
-	void Start () {
+    private void Awake()
+    {
+        if(ingameUISingleton == null)
+        {
+            ingameUISingleton = this;
+        } else
+        {
+            Destroy(this);
+        }
+    }
+
+    // Use this for initialization
+    void Start () {
         gameManager = GMScript.gameMan;
         playerMan = playerManager.playerMan;
         tm = turnManagerScript.turnManager;
@@ -48,15 +60,19 @@ public class ingameUIScript : MonoBehaviour {
         UpdateScoreText();
         UpdateTurnText();
         UpdateTargetText();
+        
 	}
 
     public void UpdateTargetText()
     {
         if (targetText != null)
         {
-            if (playerManager.playerMan.GetPlayer1Score() >= 7)
+            if ((playerManager.playerMan.GetPlayer1Target() == GMScript.Target.Black) && GMScript.gameMan.GetIsPlayer1())
             {
                 targetText.text = "You must pot the black ball";
+            } else if ((playerManager.playerMan.GetPlayer2Target() == GMScript.Target.Black) && !GMScript.gameMan.GetIsPlayer1())
+            {
+                targetText.text = "They must pot the black ball";
             }
             else
             {
@@ -188,18 +204,26 @@ public class ingameUIScript : MonoBehaviour {
             endGameText.text = "You lose! :(";
         }
 
-        gameManager.SetGameEnded(true);
+        GMScript.gameMan.SetGameEnded(true);
         endGameText.gameObject.SetActive(true);
     }
 
     public void UpdateTurnText()
     {
-        if((turnManagerScript.turnManager.GetIsPlayer1Turn() && GMScript.gameMan.GetIsPlayer1()) || (!turnManagerScript.turnManager.GetIsPlayer1Turn() && !GMScript.gameMan.GetIsPlayer1()))
+        try
         {
-            turnText.text = "It is your turn!";
-        } else
+            if ((turnManagerScript.turnManager.GetIsPlayer1Turn() && GMScript.gameMan.GetIsPlayer1()) || (!turnManagerScript.turnManager.GetIsPlayer1Turn() && !GMScript.gameMan.GetIsPlayer1()))
+            {
+                turnText.text = "It is your turn!";
+            }
+            else
+            {
+                turnText.text = "Waiting for other player to take turn";
+            }
+        }
+        catch 
         {
-            turnText.text = "Waiting for other player to take turn";
+            Debug.Log("Can't find game managers. Maybe they haven't been spawned yet?");
         }
     }
 
@@ -214,5 +238,7 @@ public class ingameUIScript : MonoBehaviour {
         ingameTextObject.SetActive(true);
         colourSelectObject.SetActive(false);
     }
+
+
 
 }

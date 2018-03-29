@@ -22,12 +22,12 @@ GameObject:
   - component: {fileID: 54013946801325012}
   - component: {fileID: 114853852975452752}
   - component: {fileID: 114784116948973362}
-  - component: {fileID: 114229017691548630}
   - component: {fileID: 114790914578467644}
   - component: {fileID: 135046292565160468}
   - component: {fileID: 23705215953367806}
   - component: {fileID: 33241821669304348}
   - component: {fileID: 75362270916446122}
+  - component: {fileID: 108025463594981856}
   m_Layer: 0
   m_Name: Ball_Neon_0
   m_TagString: cueBall
@@ -99,12 +99,12 @@ Rigidbody:
   serializedVersion: 2
   m_Mass: 0.4
   m_Drag: 0.2
-  m_AngularDrag: 1.5
+  m_AngularDrag: 1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 1
+  m_CollisionDetection: 0
 --- !u!75 &75362270916446122
 ConstantForce:
   m_ObjectHideFlags: 1
@@ -116,19 +116,42 @@ ConstantForce:
   m_RelativeForce: {x: 0, y: 0, z: 0}
   m_Torque: {x: 0, y: 0, z: 0}
   m_RelativeTorque: {x: 0, y: 0, z: 0}
---- !u!114 &114229017691548630
-MonoBehaviour:
+--- !u!108 &108025463594981856
+Light:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1196915127602012}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c20e0e0bb5f60b6418599d514f2de8ee, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rb: {fileID: 0}
-  startTurnPosition: {x: 0, y: 0, z: 0}
+  serializedVersion: 8
+  m_Type: 2
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Intensity: 3
+  m_Range: 1
+  m_SpotAngle: 30
+  m_CookieSize: 10
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 1
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_Lightmapping: 4
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 4
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
 --- !u!114 &114784116948973362
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -12,6 +12,7 @@ public class cueBallScript : MonoBehaviour {
     Vector3 spawnPosition;
     GameObject cueBall;
     GameObject pC;
+    Vector3 previousPosition;
 
 
     private void Awake()
@@ -38,8 +39,11 @@ public class cueBallScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
-	}
+        if ((transform.position.y - spawnPosition.y) > 0.1f)
+        {
+            transform.position = new Vector3(transform.position.x, spawnPosition.y + 0.045f, transform.position.z);
+        }
+    }
 
     void OnCollisionEnter(Collision collision)
     {

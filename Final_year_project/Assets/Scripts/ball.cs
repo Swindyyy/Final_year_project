@@ -12,9 +12,42 @@ public class ball : NetworkBehaviour {
     [SerializeField]
     Vector3 startTurnPosition;
 
+    bool stopMovement;
+    Vector3 prevPosition;
+    Vector3 prevRotation;
+
     void start(){
-        startTurnPosition = transform.position;
+        //startTurnPosition = transform.position;
 	}
+
+    private void Update()
+    {
+        if ((transform.position.y - startTurnPosition.y) > 0.1f)
+        {
+            transform.position = new Vector3(transform.position.x, startTurnPosition.y + 0.045f, transform.position.z);
+        }
+
+        if (stopMovement)
+        {
+            if (prevPosition != null)
+            {
+                transform.position = prevPosition;
+            }
+
+            if(prevRotation != null)
+            {
+                transform.eulerAngles = prevRotation;
+            }
+
+            Rigidbody rb = GetComponent<Rigidbody>();
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+
+        }
+
+        prevPosition = transform.position;
+        prevRotation = transform.eulerAngles;
+    }
 
     public void SetStartTurnPosition(Vector3 _pos)
     {
@@ -27,15 +60,9 @@ public class ball : NetworkBehaviour {
         return startTurnPosition;
     }
 
-    public override void OnStartLocalPlayer()
+    public void SetStopMovement(bool _value)
     {
-        
-    }
-
-    public override void OnStartServer()
-    {
-        base.OnStartServer();
-
+        stopMovement = _value;
     }
 
 }
